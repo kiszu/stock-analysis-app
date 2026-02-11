@@ -1,4 +1,4 @@
-package com.stockanalysis.app.presentation.ui
+package com.stockanalysis.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,13 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.stockanalysis.app.presentation.ui.StockAnalysisApp
 import com.stockanalysis.app.presentation.ui.theme.StockAnalysisTheme
-import dagger.hilt.android.AndroidEntryPoint
 
-/**
- * Main Activity for Stock Analysis App
- */
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

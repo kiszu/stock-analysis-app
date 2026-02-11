@@ -1,150 +1,97 @@
 package com.stockanalysis.app.data.repository
 
-import com.stockanalysis.app.data.api.StockApi
-import com.stockanalysis.app.data.local.MockDataSource
 import com.stockanalysis.app.domain.model.AnalysisResult
 import com.stockanalysis.app.domain.model.NewsItem
 import com.stockanalysis.app.domain.model.Signal
 import com.stockanalysis.app.domain.model.SignalDetail
+import com.stockanalysis.app.domain.model.SignalType
+import com.stockanalysis.app.domain.model.RiskLevel
+import com.stockanalysis.app.domain.model.TechnicalIndicators
 import com.stockanalysis.app.util.Resource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
- * Repository for stock data operations
- * Uses mock data for prototype, real API for production
+ * Repository with mock data for prototype
  */
-@Singleton
-class StockRepository @Inject constructor(
-    private val api: StockApi,
-    private val mockData: MockDataSource
-) {
-    // Toggle this to use real API
-    private val useMockData = true // Set to false when API is ready
+class StockRepository {
 
-    /**
-     * Get featured signals for dashboard
-     */
+    private val mockData = MockDataSource()
+
     fun getFeaturedSignals(): Flow<Resource<List<Signal>>> = flow {
         emit(Resource.Loading())
-        
-        if (useMockData) {
-            // Simulate network delay
-            delay(500)
-            val signals = mockData.getFeaturedSignals()
-            emit(Resource.Success(signals))
-        } else {
-            try {
-                val response = api.getFeaturedSignals()
-                emit(Resource.Success(response))
-            } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Failed to fetch signals"))
-            }
-        }
+        delay(500)
+        emit(Resource.Success(mockData.getFeaturedSignals()))
     }
 
-    /**
-     * Get detailed signal analysis
-     */
     fun getSignalDetail(symbol: String): Flow<Resource<SignalDetail>> = flow {
         emit(Resource.Loading())
-        
-        if (useMockData) {
-            delay(300)
-            val detail = mockData.getSignalDetail(symbol)
-            emit(Resource.Success(detail))
-        } else {
-            try {
-                val response = api.getSignal(symbol)
-                emit(Resource.Success(response))
-            } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Failed to fetch signal detail"))
-            }
-        }
+        delay(300)
+        emit(Resource.Success(mockData.getSignalDetail(symbol)))
     }
 
-    /**
-     * Get market news
-     */
     fun getMarketNews(limit: Int = 10): Flow<Resource<List<NewsItem>>> = flow {
         emit(Resource.Loading())
-        
-        if (useMockData) {
-            delay(400)
-            val news = mockData.getMarketNews().take(limit)
-            emit(Resource.Success(news))
-        } else {
-            try {
-                val response = api.getNews(limit = limit)
-                emit(Resource.Success(response))
-            } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Failed to fetch news"))
-            }
-        }
+        delay(400)
+        emit(Resource.Success(mockData.getMarketNews().take(limit)))
     }
 
-    /**
-     * Search for symbols
-     */
     fun searchSymbol(query: String): Flow<Resource<List<Signal>>> = flow {
         if (query.isBlank()) {
             emit(Resource.Success(emptyList()))
             return@flow
         }
-        
-        if (useMockData) {
-            delay(200)
-            val results = mockData.searchSymbols(query)
-            emit(Resource.Success(results))
-        } else {
-            try {
-                val response = api.searchSymbol(query)
-                emit(Resource.Success(response))
-            } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Search failed"))
-            }
-        }
+        delay(200)
+        emit(Resource.Success(mockData.searchSymbols(query)))
+    }
+}
+
+/**
+ * Mock data source
+ */
+class MockDataSource {
+
+    fun getFeaturedSignals(): List<Signal> = listOf(
+        Signal("1", "NVDA", "NVIDIA Corporation", SignalType.STRONG_BUY, 0.95f, 495.22, 550.00, 8.52, System.currentTimeMillis(), "AI Trend", true),
+        Signal("2", "AAPL", "Apple Inc.", SignalType.BUY, 0.87f, 178.50, 185.20, 3.82, System.currentTimeMillis(), "Technical", true),
+        Signal("3", "MSFT", "Microsoft Corporation", SignalType.STRONG_BUY, 0.92f, 378.91, 400.00, 5.21, System.currentTimeMillis(), "Fundamental", true),
+        Signal("4", "TSLA", "Tesla Inc.", SignalType.SELL, 0.72f, 248.50, 235.00, -4.31, System.currentTimeMillis(), "Technical", true),
+        Signal("5", "GOOGL", "Alphabet Inc.", SignalType.BUY, 0.78f, 141.80, 150.00, 2.15, System.currentTimeMillis(), "Technical", true),
+        Signal("6", "AMZN", "Amazon.com Inc.", SignalType.BUY, 0.81f, 153.42, 165.00, 2.78, System.currentTimeMillis(), "Technical", true)
+    )
+
+    fun getSignalDetail(symbol: String): SignalDetail {
+        val baseSignal = getFeaturedSignals().find { it.symbol == symbol } ?: getFeaturedSignals().first()
+
+        return SignalDetail(
+            signal = baseSignal,
+            technicalIndicators = TechnicalIndicators(
+                rsi = 65.4f,
+                macd = "Bullish",
+                movingAverage50 = 175.20,
+                movingAverage200 = 168.50,
+                bollingerUpper = 185.00,
+                bollingerLower = 170.00
+            ),
+            supportLevel = baseSignal.currentPrice * 0.95,
+            resistanceLevel = baseSignal.targetPrice,
+            volumeAnalysis = "Volume increased by 25% above average",
+            trendDescription = "Strong uptrend with increasing momentum.",
+            riskLevel = RiskLevel.MEDIUM
+        )
     }
 
-    /**
-     * Get analysis for a symbol
-     */
-    fun getAnalysis(symbol: String): Flow<Resource<AnalysisResult>> = flow {
-        emit(Resource.Loading())
-        
-        if (useMockData) {
-            delay(600)
-            // Return mock analysis
-            val mockSignal = mockData.getFeaturedSignals().find { it.symbol == symbol }
-                ?: mockData.getFeaturedSignals().first()
-            
-            val analysis = AnalysisResult(
-                symbol = symbol,
-                overallScore = mockSignal.confidence,
-                technicalScore = mockSignal.confidence + 0.05f,
-                fundamentalScore = mockSignal.confidence - 0.02f,
-                sentimentScore = mockSignal.confidence + 0.03f,
-                recommendation = mockSignal.signalType,
-                keyMetrics = mapOf(
-                    "PE Ratio" to 25.4,
-                    "EPS" to 5.82,
-                    "Market Cap" to 2.8e12,
-                    "Dividend Yield" to 0.52
-                ),
-                analysisText = "Strong technical setup with bullish momentum. RSI at 65.4 indicates room for continued growth. MACD shows bullish crossover. Support level established at previous resistance.",
-                timestamp = System.currentTimeMillis()
-            )
-            emit(Resource.Success(analysis))
-        } else {
-            try {
-                val response = api.getAnalysis(symbol)
-                emit(Resource.Success(response))
-            } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Failed to fetch analysis"))
-            }
+    fun getMarketNews(): List<NewsItem> = listOf(
+        NewsItem("1", "Fed Signals Rate Cuts", "Federal Reserve indicated potential rate cuts.", "Reuters", "", null, System.currentTimeMillis(), listOf("SPY", "QQQ")),
+        NewsItem("2", "AI Chip Demand Surge", "NVIDIA benefits from AI accelerator demand.", "Bloomberg", "", null, System.currentTimeMillis() - 3600000, listOf("NVDA", "AMD")),
+        NewsItem("3", "Tesla Earnings Beat", "Better-than-expected Q4 earnings.", "CNBC", "", null, System.currentTimeMillis() - 7200000, listOf("TSLA"))
+    )
+
+    fun searchSymbols(query: String): List<Signal> {
+        return getFeaturedSignals().filter {
+            it.symbol.contains(query, ignoreCase = true) ||
+            it.name.contains(query, ignoreCase = true)
         }
     }
 }

@@ -3,25 +3,21 @@ package com.stockanalysis.app.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stockanalysis.app.data.repository.StockRepository
-import com.stockanalysis.app.domain.model.AnalysisResult
 import com.stockanalysis.app.domain.model.NewsItem
 import com.stockanalysis.app.domain.model.Signal
 import com.stockanalysis.app.domain.model.SignalDetail
 import com.stockanalysis.app.util.Resource
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import javax.inject.Inject
 
 /**
  * ViewModel for Dashboard screen
  */
-@HiltViewModel
-class DashboardViewModel @Inject constructor(
-    private val repository: StockRepository
+class DashboardViewModel(
+    private val repository: StockRepository = StockRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())

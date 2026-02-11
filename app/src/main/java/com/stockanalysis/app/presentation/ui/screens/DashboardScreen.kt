@@ -11,12 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stockanalysis.app.domain.model.Signal
 import com.stockanalysis.app.domain.model.SignalType
 import com.stockanalysis.app.presentation.viewmodel.DashboardViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * Dashboard Screen - Main screen showing featured signals
@@ -24,9 +22,9 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = hiltViewModel(),
-    onSignalClick: (String) -> Unit,
-    onSearchClick: () -> Unit
+    viewModel: DashboardViewModel = viewModel(),
+    onSignalClick: (String) -> Unit = {},
+    onSearchClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -35,16 +33,13 @@ fun DashboardScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "📊 Stock Analysis",
+                        "Stock Analysis",
                         fontWeight = FontWeight.Bold
                     )
                 },
                 actions = {
                     IconButton(onClick = onSearchClick) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
-                    IconButton(onClick = { /* Settings */ }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
             )
@@ -82,7 +77,7 @@ fun DashboardScreen(
                         // Featured Signals Section
                         item {
                             Text(
-                                "🔥 Featured Signals",
+                                "Featured Signals",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(vertical = 8.dp)
@@ -95,18 +90,6 @@ fun DashboardScreen(
                                 onClick = { onSignalClick(signal.symbol) }
                             )
                         }
-
-                        // Latest News Section
-                        item {
-                            Text(
-                                "📰 Latest News",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-
-                        // News items would go here
                     }
                 }
             }
@@ -121,17 +104,7 @@ fun SignalCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = when (signal.signalType) {
-                SignalType.BUY, SignalType.STRONG_BUY -> 
-                    MaterialTheme.colorScheme.primaryContainer
-                SignalType.SELL, SignalType.STRONG_SELL -> 
-                    MaterialTheme.colorScheme.errorContainer
-                else -> 
-                    MaterialTheme.colorScheme.surfaceVariant
-            }
-        )
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
@@ -197,10 +170,7 @@ fun SignalBadge(signalType: SignalType) {
 @Composable
 fun MarketOverviewCard() {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(

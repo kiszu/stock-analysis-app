@@ -68,6 +68,4 @@ sealed class Screen(val route: String) {
         fun createRoute(symbol: String) = "signal/$symbol"
     }
     object Search : Screen("search")
-    object Settings : Screen("settings")
-    object Subscription : Screen("subscription")
 }

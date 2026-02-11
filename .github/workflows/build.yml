@@ -1,4 +1,4 @@
-name: Build and Release APK
+name: Build APK
 
 on:
   push:
@@ -9,35 +9,49 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-      
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           api-level: 34
           build-tools: 34.0.0
-      
-      - name: Build APK
-        run: ./gradlew assembleRelease --stacktrace
-      
-      - name: Upload APK
-        if: success()
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build Debug APK
+        run: |
+          cd android_app
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release.apk
-          path: app/build/outputs/apk/release/
-      
+          name: app-debug.apk
+          path: android_app/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+
       - name: Create Release
-        if: success()
+        if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v1
         with:
-          files: app/build/outputs/apk/release/*.apk
+          files: android_app/app/build/outputs/apk/debug/app-debug.apk
           draft: false
           prerelease: false
         env:
