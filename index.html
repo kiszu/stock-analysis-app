@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📈 AlphaSignal - 专业股票信号</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2332;
+            --accent-green: #00d4aa;
+            --accent-red: #ff4757;
+            --accent-blue: #3b82f6;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --border-color: #2d3748;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, #1e3a5f 50%, #1a2332 100%);
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo-text span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .user-tier {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .search-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .search-wrapper { position: relative; }
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        .search-input {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+        }
+        .market-overview {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .market-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .market-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .market-name { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+        .market-value { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .market-change { font-size: 13px; font-weight: 600; }
+        .market-change.up { color: var(--accent-green); }
+        .market-change.down { color: var(--accent-red); }
+        .pro-banner { max-width: 600px; margin: 20px auto; padding: 0 20px; }
+        .pro-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .pro-info h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #818cf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .pro-info p { color: var(--text-secondary); font-size: 14px; }
+        .pro-price .amount { font-size: 28px; font-weight: 700; color: var(--accent-green); }
+        .pro-price .period { font-size: 14px; color: var(--text-secondary); }
+        .section { max-width: 600px; margin: 30px auto; padding: 0 20px; }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .section-title { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(to bottom, var(--accent-green), var(--accent-blue));
+            border-radius: 2px;
+        }
+        .refresh-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .signal-list { display: flex; flex-direction: column; gap: 12px; }
+        .signal-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .signal-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+        .signal-card.buy::before { background: linear-gradient(to bottom, var(--accent-green), #10b981); }
+        .signal-card.sell::before { background: linear-gradient(to bottom, var(--accent-red), #ef4444); }
+        .signal-card:hover { transform: translateX(4px); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
+        .signal-left { display: flex; align-items: center; gap: 16px; }
+        .stock-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+        }
+        .stock-icon.NVDA { background: linear-gradient(135deg, #76b900, #5a9c00); }
+        .stock-icon.AAPL { background: linear-gradient(135deg, #555, #333); }
+        .stock-icon.MSFT { background: linear-gradient(135deg, #00a4ef, #0078d4); }
+        .stock-icon.TSLA { background: linear-gradient(135deg, #e31937, #c11228); }
+        .stock-icon.GOOGL { background: linear-gradient(135deg, #4285f4, #3367d6); }
+        .stock-icon.AMZN { background: linear-gradient(135deg, #ff9900, #e88b00); }
+        .stock-icon.BTC { background: linear-gradient(135deg, #f7931a, #e6820a); }
+        .stock-icon.ETH { background: linear-gradient(135deg, #627eea, #4a62c9); }
+        .stock-info h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .stock-info p { color: var(--text-secondary); font-size: 13px; }
+        .signal-right { text-align: right; }
+        .signal-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .signal-badge.buy { background: rgba(0, 212, 170, 0.2); color: var(--accent-green); }
+        .signal-badge.sell { background: rgba(255, 71, 87, 0.2); color: var(--accent-red); }
+        .signal-badge.hold { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .price-info { display: flex; align-items: baseline; gap: 8px; justify-content: flex-end; }
+        .current-price { font-size: 18px; font-weight: 700; }
+        .price-change {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .price-change.up { background: rgba(0, 212, 170, 0.15); color: var(--accent-green); }
+        .price-change.down { background: rgba(255, 71, 87, 0.15); color: var(--accent-red); }
+        .confidence-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); }
+        .confidence-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .confidence-label { font-size: 11px; color: var(--text-secondary); }
+        .confidence-value { font-size: 11px; font-weight: 600; }
+        .confidence-bar { height: 6px; background: var(--bg-primary); border-radius: 3px; overflow: hidden; }
+        .confidence-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+        .confidence-fill.high { background: linear-gradient(90deg, var(--accent-green), #10b981); }
+        .confidence-fill.medium { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .confidence-fill.low { background: linear-gradient(90deg, var(--accent-red), #ef4444); }
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(17, 24, 39, 0.95);
+            padding: 12px 20px 28px;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+        }
+        .tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 12px;
+        }
+        .tab:hover { color: var(--text-primary); }
+        .tab.active { color: var(--accent-green); }
+        .tab-icon { font-size: 22px; }
+        .tab-label { font-size: 11px; font-weight: 500; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+        .modal.active { display: block; }
+        .modal-content { max-width: 600px; margin: 0 auto; background: var(--bg-secondary); border-radius: 24px; overflow: hidden; }
+        .modal-header {
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1e3a5f 100%);
+            padding: 24px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-body { padding: 24px; }
+        .detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .detail-title h2 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .detail-title p { color: var(--text-secondary); font-size: 14px; }
+        .detail-badge { padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; }
+        .price-section { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .price-card { background: var(--bg-card); border-radius: 16px; padding: 16px; text-align: center; }
+        .price-card .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+        .price-card .value { font-size: 20px; font-weight: 700; }
+        .price-card .value.green { color: var(--accent-green); }
+        .price-card .value.red { color: var(--accent-red); }
+        .chart-section { margin-bottom: 24px; }
+        .chart-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        .chart-container { background: var(--bg-card); border-radius: 16px; padding: 20px; height: 200px; }
+        .mini-chart { display: flex; align-items: flex-end; justify-content: space-around; height: 160px; }
+        .chart-bar { width: 8px; background: linear-gradient(to top, var(--accent-green), var(--accent-blue)); border-radius: 4px; }
+        .indicators-section { margin-bottom: 24px; }
+        .indicators-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .indicator-card { background: var(--bg-card); border-radius: 12px; padding: 16px 12px; text-align: center; }
+        .indicator-card .name { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; }
+        .indicator-card .value { font-size: 16px; font-weight: 600; }
+        .indicator-card .value.good { color: var(--accent-green); }
+        .indicator-card .value.bad { color: var(--accent-red); }
+        .indicator-card .value.neutral { color: #f59e0b; }
+        .risk-section { margin-bottom: 24px; }
+        .risk-bar { display: flex; gap: 8px; }
+        .risk-item { flex: 1; padding: 12px; border-radius: 10px; text-align: center; font-size: 12px; font-weight: 500; }
+        .risk-item.low { background: rgba(0, 212, 170, 0.15); color: var(--accent-green); }
+        .risk-item.medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .risk-item.high { background: rgba(255, 71, 87, 0.15); color: var(--accent-red); }
+        .risk-item.active { background: var(--accent-green); color: white; }
+        .action-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .action-btn.buy { background: linear-gradient(135deg, var(--accent-green), #10b981); color: white; }
+        .spacer { height: 100px; }
+        @media (max-width: 480px) {
+            .market-cards { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .indicators-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">📈</div>
+                <div class="logo-text">
+                    <h1>AlphaSignal</h1>
+                    <span>专业股票信号</span>
+                </div>
+            </div>
+            <div class="user-tier">🚀 升级Pro</div>
+        </div>
+    </div>
+    <div class="search-container">
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="搜索股票代码或名称..." id="search" oninput="filterSignals()">
+        </div>
+    </div>
+    <div class="market-overview">
+        <div class="market-cards">
+            <div class="market-card">
+                <div class="market-name">上证指数</div>
+                <div class="market-value" style="color: var(--accent-green);">3,421.39</div>
+                <div class="market-change up">+1.24%</div>
+            </div>
+            <div class="market-card">
+                <div class="market-name">深证成指</div>
+                <div class="market-value" style="color: var(--accent-green);">11,745.89</div>
+                <div class="market-change up">+1.57%</div>
+            </div>
+            <div class="market-card">
+                <div class="market-name">创业板</div>
+                <div class="market-value" style="color: var(--accent-red);">2,341.67</div>
+                <div class="market-change down">-0.32%</div>
+            </div>
+        </div>
+    </div>
+    <div class="pro-banner">
+        <div class="pro-card">
+            <div class="pro-info">
+                <h3>🚀 升级到 Pro</h3>
+                <p>解锁无限实时信号 · Telegram推送提醒</p>
+            </div>
+            <div class="pro-price">
+                <div class="amount">$9.99</div>
+                <div class="period">/年</div>
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">精选信号</div>
+            <button class="refresh-btn" onclick="renderSignals()">🔄 刷新</button>
+        </div>
+        <div class="signal-list" id="signalList"></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="tab-bar">
+        <div class="tab active">
+            <span class="tab-icon">📊</span>
+            <span class="tab-label">信号</span>
+        </div>
+        <div class="tab">
+            <span class="tab-icon">⭐</span>
+            <span class="tab-label">自选</span>
+        </div>
+        <div class="tab">
+            <span class="tab-icon">📰</span>
+            <span class="tab-label">资讯</span>
+        </div>
+        <div class="tab">
+            <span class="tab-icon">👤</span>
+            <span class="tab-label">我的</span>
+        </div>
+    </div>
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal()">×</button>
+                <div class="detail-header">
+                    <div class="detail-title">
+                        <h2 id="modalSymbol">AAPL</h2>
+                        <p id="modalName">Apple Inc.</p>
+                    </div>
+                    <div class="detail-badge" id="modalBadge">BUY</div>
+                </div>
+                <div class="price-section">
+                    <div class="price-card">
+                        <div class="label">当前价格</div>
+                        <div class="value" id="modalPrice">$178.50</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="label">目标价格</div>
+                        <div class="value green" id="modalTarget">$185.20</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="label">涨跌幅</div>
+                        <div class="value" id="modalChange">+3.8%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="chart-section">
+                    <div class="chart-title">📈 7日走势</div>
+                    <div class="chart-container">
+                        <div class="mini-chart" id="miniChart"></div>
+                    </div>
+                </div>
+                <div class="confidence-section" style="margin-bottom: 24px;">
+                    <div class="confidence-header">
+                        <span class="confidence-label">信号置信度</span>
+                        <span class="confidence-value" id="modalConfidence">87%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill high" id="confidenceFill" style="width: 87%"></div>
+                    </div>
+                </div>
+                <div class="indicators-section">
+                    <div class="chart-title">技术指标</div>
+                    <div class="indicators-grid" id="indicatorsGrid"></div>
+                </div>
+                <div class="risk-section">
+                    <div class="chart-title">风险等级</div>
+                    <div class="risk-bar" id="riskBar">
+                        <div class="risk-item">低风险</div>
+                        <div class="risk-item">中风险</div>
+                        <div class="risk-item">高风险</div>
+                    </div>
+                </div>
+                <button class="action-btn buy" id="actionBtn" onclick="toggleWatchlist()">
+                    <span id="watchlistIcon">⭐</span>
+                    <span id="watchlistText">添加自选</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const signals = [
+            { symbol: 'NVDA', name: 'NVIDIA Corporation', type: 'STRONG_BUY', confidence: 0.95, price: 495.22, change: 8.52, target: 550, rsi: 72, macd: 'Bullish', ma50: 480, ma200: 445, trend: 'Strong Uptrend' },
+            { symbol: 'AAPL', name: 'Apple Inc.', type: 'BUY', confidence: 0.87, price: 178.50, change: 3.82, target: 185, rsi: 65, macd: 'Bullish', ma50: 175, ma200: 168, trend: 'Uptrend' },
+            { symbol: 'MSFT', name: 'Microsoft Corporation', type: 'STRONG_BUY', confidence: 0.92, price: 378.91, change: 5.21, target: 400, rsi: 68, macd: 'Bullish', ma50: 365, ma200: 350, trend: 'Strong Uptrend' },
+            { symbol: 'TSLA', name: 'Tesla Inc.', type: 'SELL', confidence: 0.72, price: 248.50, change: -4.31, target: 235, rsi: 38, macd: 'Bearish', ma50: 262, ma200: 275, trend: 'Downtrend' },
+            { symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'BUY', confidence: 0.78, price: 141.80, change: 2.15, target: 150, rsi: 58, macd: 'Bullish', ma50: 138, ma200: 132, trend: 'Uptrend' },
+            { symbol: 'AMZN', name: 'Amazon.com Inc.', type: 'BUY', confidence: 0.81, price: 153.42, change: 2.78, target: 165, rsi: 61, macd: 'Bullish', ma50: 148, ma200: 142, trend: 'Uptrend' },
+            { symbol: 'BTC', name: 'Bitcoin', type: 'STRONG_BUY', confidence: 0.88, price: 43250, change: 4.25, target: 48000, rsi: 70, macd: 'Bullish', ma50: 41500, ma200: 38500, trend: 'Strong Uptrend' },
+            { symbol: 'ETH', name: 'Ethereum', type: 'BUY', confidence: 0.85, price: 2280, change: 3.92, target: 2500, rsi: 66, macd: 'Bullish', ma50: 2180, ma200: 2050, trend: 'Uptrend' }
+        ];
+        let watchlist = JSON.parse(localStorage.getItem('alphasignal_watchlist') || '[]');
+        let currentSignal = null;
+
+        function renderSignals(filter = '') {
+            const container = document.getElementById('signalList');
+            const filtered = signals.filter(s => 
+                s.symbol.toLowerCase().includes(filter.toLowerCase()) ||
+                s.name.toLowerCase().includes(filter.toLowerCase())
+            );
+            container.innerHTML = filtered.map(s => {
+                const typeClass = s.type.includes('BUY') ? 'buy' : s.type.includes('SELL') ? 'sell' : 'hold';
+                const confClass = s.confidence >= 0.8 ? 'high' : s.confidence >= 0.6 ? 'medium' : 'low';
+                return `
+                    <div class="signal-card ${typeClass}" onclick="showDetail('${s.symbol}')">
+                        <div class="signal-left">
+                            <div class="stock-icon ${s.symbol}">${s.symbol.substring(0, 2)}</div>
+                            <div class="stock-info">
+                                <h3>${s.symbol}</h3>
+                                <p>${s.name}</p>
+                            </div>
+                        </div>
+                        <div class="signal-right">
+                            <div class="signal-badge ${typeClass}">${s.type}</div>
+                            <div class="price-info">
+                                <span class="current-price">$${typeof s.price === 'number' && s.price > 1000 ? s.price.toLocaleString() : s.price.toFixed(2)}</span>
+                                <span class="price-change ${s.change >= 0 ? 'up' : 'down'}">${s.change >= 0 ? '+' : ''}${s.change.toFixed(2)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="confidence-section">
+                        <div class="confidence-header">
+                            <span class="confidence-label">置信度</span>
+                            <span class="confidence-value">${(s.confidence * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill ${confClass}" style="width: ${s.confidence * 100}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterSignals() {
+            renderSignals(document.getElementById('search').value);
+        }
+
+        function showDetail(symbol) {
+            const s = signals.find(x => x.symbol === symbol);
+            if (!s) return;
+            currentSignal = s;
+            const typeClass = s.type.includes('BUY') ? 'buy' : s.type.includes('SELL') ? 'sell' : 'hold';
+            document.getElementById('modalSymbol').textContent = s.symbol;
+            document.getElementById('modalName').textContent = s.name;
+            document.getElementById('modalBadge').textContent = s.type;
+            document.getElementById('modalBadge').className = `detail-badge ${typeClass}`;
+            document.getElementById('modalPrice').textContent = '$' + (typeof s.price === 'number' && s.price > 1000 ? s.price.toLocaleString() : s.price.toFixed(2));
+            document.getElementById('modalTarget').textContent = '$' + (typeof s.target === 'number' && s.target > 1000 ? s.target.toLocaleString() : s.target.toFixed(2));
+            document.getElementById('modalChange').textContent = (s.change >= 0 ? '+' : '') + s.change.toFixed(2) + '%';
+            document.getElementById('modalChange').style.color = s.change >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+            document.getElementById('modalConfidence').textContent = (s.confidence * 100).toFixed(0) + '%';
+            const confClass = s.confidence >= 0.8 ? 'high' : s.confidence >= 0.6 ? 'medium' : 'low';
+            document.getElementById('confidenceFill').className = `confidence-fill ${confClass}`;
+            document.getElementById('confidenceFill').style.width = (s.confidence * 100) + '%';
+            const isInWatchlist = watchlist.includes(s.symbol);
+            document.getElementById('watchlistIcon').textContent = isInWatchlist ? '✓' : '⭐';
+            document.getElementById('watchlistText').textContent = isInWatchlist ? '已添加' : '添加自选';
+            document.getElementById('actionBtn').style.background = isInWatchlist ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'linear-gradient(135deg, var(--accent-green), #10b981)';
+            const indicators = [
+                { name: 'RSI', value: s.rsi, cls: s.rsi > 70 ? 'bad' : s.rsi < 30 ? 'good' : 'neutral' },
+                { name: 'MACD', value: s.macd, cls: s.macd === 'Bullish' ? 'good' : 'bad' },
+                { name: 'MA50', value: '$' + (typeof s.ma50 === 'number' && s.ma50 > 1000 ? s.ma50.toLocaleString() : s.ma50), cls: 'neutral' },
+                { name: 'MA200', value: '$' + (typeof s.ma200 === 'number' && s.ma200 > 1000 ? s.ma200.toLocaleString() : s.ma200), cls: 'neutral' }
+            ];
+            document.getElementById('indicatorsGrid').innerHTML = indicators.map(i => `
+                <div class="indicator-card">
+                    <div class="name">${i.name}</div>
+                    <div class="value ${i.cls}">${i.value}</div>
+                </div>
+            `).join('');
+            let chartHtml = '';
+            for (let i = 0; i < 20; i++) {
+                const h = 40 + Math.random() * 100;
+                chartHtml += `<div class="chart-bar" style="height: ${h}px"></div>`;
+            }
+            document.getElementById('miniChart').innerHTML = chartHtml;
+            const riskLevel = s.type.includes('STRONG_BUY') || s.type.includes('STRONG_SELL') ? 'high' : s.type === 'HOLD' ? 'medium' : 'medium';
+            document.getElementById('riskBar').innerHTML = `
+                <div class="risk-item ${riskLevel === 'low' ? 'active' : ''}">低风险</div>
+                <div class="risk-item ${riskLevel === 'medium' ? 'active' : ''}">中风险</div>
+                <div class="risk-item ${riskLevel === 'high' ? 'active' : ''}">高风险</div>
+            `;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function toggleWatchlist() {
+            if (!currentSignal) return;
+            const idx = watchlist.indexOf(currentSignal.symbol);
+            if (idx > -1) {
+                watchlist.splice(idx, 1);
+            } else {
+                watchlist.push(currentSignal.symbol);
+            }
+            localStorage.setItem('alphasignal_watchlist', JSON.stringify(watchlist));
+            showDetail(currentSignal.symbol);
+        }
+
+        renderSignals();
+    </script>
+</body>
+</html>
